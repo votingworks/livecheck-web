@@ -1,8 +1,24 @@
-var message = "Hello!";
-var signature = "untrusted comment: verify with test.pub\nRWQjxsWYC1ei4uz+kFem6eK50EvLxr0rWGN0AkZwsS/EDmgyh9tig7bXJDvHE2PBO5G3Z8KvRi0g4q7yXYWo++4TegKvaG+GMAI=";
-var pubkey = "untrusted comment: signify public key\nRWQjxsWYC1ei4jZusPuwEvJvxgLiR3ex6h60/Q4BbX4cVTWFrDonl58b";
-var video = document.createElement("video");
 
+import { PublicKey, Signature, verify } from "ts-signify";
+import jsQR from 'jsqr';
+
+function stringToByteArray(input) {
+  let result = [];
+
+  for (let i = 0; i < input.length; i++) {
+    result.push(input.charCodeAt(i));
+  }
+
+  return new Uint8Array(result);
+}
+
+const message = stringToByteArray("Hello!\n");
+const signature = Signature.import("untrusted comment: verify with test.pub\nRWQjxsWYC1ei4uz+kFem6eK50EvLxr0rWGN0AkZwsS/EDmgyh9tig7bXJDvHE2PBO5G3Z8KvRi0g4q7yXYWo++4TegKvaG+GMAI=");
+const pubkey = PublicKey.import("untrusted comment: signify public key\nRWQjxsWYC1ei4jZusPuwEvJvxgLiR3ex6h60/Q4BbX4cVTWFrDonl58b");
+
+console.log("verify: ", verify(message, signature, pubkey));
+
+var video = document.createElement("video");
 var canvasElement = document.getElementById("canvas");
 var successElement = document.getElementById("success");
 var canvas = canvasElement.getContext("2d");
@@ -11,16 +27,7 @@ var outputContainer = document.getElementById("output");
 var outputMessage = document.getElementById("outputMessage");
 var outputData = document.getElementById("outputData");
 
-function drawLine(begin, end, color) {
-  canvas.beginPath();
-  canvas.moveTo(begin.x, begin.y);
-  canvas.lineTo(end.x, end.y);
-  canvas.lineWidth = 4;
-  canvas.strokeStyle = color;
-  canvas.stroke();
-}
-
-navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+/*navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
   video.srcObject = stream;
   video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
   video.play();
@@ -79,3 +86,4 @@ function tick() {
     requestAnimationFrame(tick);
   }
 }
+*/

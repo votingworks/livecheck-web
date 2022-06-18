@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/votingworks/livecheck-web#readme",
   "dependencies": {
+    "@noble/ed25519": "^1.6.0",
+    "jsqr": "^1.4.0",
+    "ts-signify": "^0.5.1",
     "vite": "^2.9.12"
   }
 }
