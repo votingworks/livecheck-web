@@ -54,14 +54,16 @@
 </head>
 <body>
   <h1>LiveCheck</h1>
-  <div id="loadingMessage">🎥 Unable to access video stream (please make sure you have a webcam enabled)</div>
+  <div id="loadingMessage"><button id="startvideo">Start</button></div>
   <canvas id="canvas" hidden></canvas>
   <div id="output" hidden style="font-size:1.3em;">
     <div id="outputMessage">No QR code detected.</div>
     <div hidden><span id="outputData"></span></div>
   </div>
   <div id="success" hidden>
-    <h1 align="center">Success!<br>Election results uploaded.</h1>
+    <h1 align="center">Success!<br></h1>
+    <div id="successcontent">
+    </div>
   </div>
 </body>
 <script src="app.js" />
