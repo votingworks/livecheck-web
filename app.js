@@ -60,7 +60,6 @@ function tick() {
 	    }
 
 	    if (code_url) {
-	    
 		const {protocol, hostname, pathname, port, searchParams} = code_url;
 		if (protocol != 'https:' || hostname != 'check.voting.works' || pathname != '/' || port != '') {
 		    return;
@@ -77,12 +76,12 @@ function tick() {
 		}
 		
 		// verify signature
-		const message = stringToByteArray(payload);
+		const message = stringToByteArray("lc." + payload);
 		const fullSignature = Signature.import("untrusted comment: \n" + signature);
 		const pubkey = PublicKey.import("untrusted comment: \n" + publicKeys[machineId]);
 
 		const result = verify(message, fullSignature, pubkey);
-		const [header, signedMachineId, timestamp, electionId] = payload.split('|');
+		const [signedMachineId, timestamp, electionId] = payload.split('|');
 		const secondsAgo = (new Date().getTime() - parseInt(timestamp)) / 1000;
 		// display success
 		if (result) {
@@ -91,6 +90,8 @@ function tick() {
 		    successElement.hidden = false;
 		    continueAnimation = false;
 		    outputContainer.hidden = true;
+		} else {
+		    console.log("verification failed");
 		}
 	    }
 	}
