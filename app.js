@@ -85,7 +85,7 @@ function tick() {
 		const secondsAgo = (new Date().getTime() - parseInt(timestamp)) / 1000;
 		// display success
 		if (result) {
-		    successContentElement.innerHTML = "Machine ID: <b>" + signedMachineId + "</b><br>" + "Seconds Ago: <b>" + secondsAgo + "</b><br>Election ID: <tt>" + electionId + "</tt>";
+		    successContentElement.innerHTML = "Machine ID: <b>" + signedMachineId + "</b><br>" + "Seconds Ago: <b>" + secondsAgo + "</b><br>Election ID: <tt>" + electionId.substring(0,10) + "</tt>";
 		    canvasElement.hidden = true;
 		    successElement.hidden = false;
 		    continueAnimation = false;
