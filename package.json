@@ -1,25 +1,27 @@
 {
-  "name": "livecheck-web",
-  "version": "0.1.0",
-  "description": "Checking VotingWorks machine integrity",
-  "main": "jsqr.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/votingworks/livecheck-web.git"
-  },
-  "author": "",
-  "license": "AGPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/votingworks/livecheck-web/issues"
-  },
-  "homepage": "https://github.com/votingworks/livecheck-web#readme",
-  "dependencies": {
-    "@noble/ed25519": "^1.6.0",
-    "jsqr": "^1.4.0",
-    "ts-signify": "^0.5.1",
-    "vite": "^2.9.12"
-  }
+    "name": "livecheck-web",
+    "version": "0.2.0",
+    "description": "Checking VotingWorks machine integrity",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/votingworks/livecheck-web.git"
+    },
+    "author": "",
+    "license": "AGPL-3.0-or-later",
+    "bugs": {
+        "url": "https://github.com/votingworks/livecheck-web/issues"
+    },
+    "homepage": "https://github.com/votingworks/livecheck-web#readme",
+    "dependencies": {
+        "@wasmer/wasmfs": "^0.12.0",
+        "jsqr": "^1.4.0",
+        "openssl.js": "^1.2.0",
+        "vite": "^2.9.12"
+    }
 }
