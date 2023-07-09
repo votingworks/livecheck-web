@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 pyopenssl = "*"
+flask = "*"
 
 [dev-packages]
 

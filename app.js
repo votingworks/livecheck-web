@@ -2,106 +2,7 @@
 
 import jsQR from 'jsqr';
 
-import { OpenSSL } from 'openssl.js';
-import WasmFs from '@wasmer/wasmfs';
 
-const wasmFs = new WasmFs();
-wasmFs.fs.mkdirSync('/usr');
-wasmFs.fs.mkdirSync('/usr/local');
-wasmFs.fs.mkdirSync('/usr/local/ssl');
-wasmFs.fs.writeFileSync('/usr/local/ssl/openssl.cnf', `
-#
-# OpenSSL configuration file.
-#
-
-# Establish working directory.
-
-dir                 = .
-
-[ ca ]
-default_ca              = CA_default
-
-[ CA_default ]
-serial                  = $dir/serial
-database                = $dir/certindex.txt
-new_certs_dir               = $dir/certs
-certificate             = $dir/cacert.pem
-private_key             = $dir/private/cakey.pem
-default_days                = 365
-default_md              = md5
-preserve                = no
-email_in_dn             = no
-nameopt                 = default_ca
-certopt                 = default_ca
-policy                  = policy_match
-
-[ policy_match ]
-countryName             = match
-stateOrProvinceName         = match
-organizationName            = match
-organizationalUnitName          = optional
-commonName              = supplied
-emailAddress                = optional
-
-[ req ]
-default_bits                = 1024          # Size of keys
-default_keyfile             = key.pem       # name of generated keys
-default_md              = md5               # message digest algorithm
-string_mask             = nombstr       # permitted characters
-distinguished_name          = req_distinguished_name
-req_extensions              = v3_req
-
-[ req_distinguished_name ]
-# Variable name             Prompt string
-#-------------------------    ----------------------------------
-0.organizationName          = Organization Name (company)
-organizationalUnitName          = Organizational Unit Name (department, division)
-emailAddress                = Email Address
-emailAddress_max            = 40
-localityName                = Locality Name (city, district)
-stateOrProvinceName         = State or Province Name (full name)
-countryName             = Country Name (2 letter code)
-countryName_min             = 2
-countryName_max             = 2
-commonName              = Common Name (hostname, IP, or your name)
-commonName_max              = 64
-
-# Default values for the above, for consistency and less typing.
-# Variable name             Value
-#------------------------     ------------------------------
-0.organizationName_default      = My Company
-localityName_default            = My Town
-stateOrProvinceName_default     = State or Providence
-countryName_default         = US
-
-[ v3_ca ]
-basicConstraints            = CA:TRUE
-subjectKeyIdentifier            = hash
-authorityKeyIdentifier          = keyid:always,issuer:always
-
-[ v3_req ]
-basicConstraints            = CA:FALSE
-subjectKeyIdentifier            = hash
-`);
-
-console.log("file written!");
-
-(async function() {
-  let openSSL = new OpenSSL({
-      fs: wasmFs.fs,
-      rootDir: "/",
-      wasmBinaryPath: "./node_modules/openssl.js/dist/openssl.b64.wasm"
-  });
-  let result1 = await openSSL.runCommand(
-    "genpkey -algorithm Ed25519 -out /private.pem"
-  );
-  let pK = wasmFs.fs.readFileSync("/private.pem", { encoding: "utf8" });
-  console.log(pK);
-  document.body.innerText = pK;
-})();
-
-
-/*
 var video = document.createElement("video");
 var canvasElement = document.getElementById("canvas");
 var successElement = document.getElementById("success");
@@ -113,17 +14,27 @@ var outputMessage = document.getElementById("outputMessage");
 var outputData = document.getElementById("outputData");
 
 function processCodeData(data) {
-    console.log(data);
-    // display success
-    if (result) {
-	successContentElement.innerHTML = "Machine ID: <b>" + signedMachineId + "</b><br>" + "Seconds Ago: <b>" + secondsAgo + "</b><br>Election ID: <tt>" + electionId.substring(0,10) + "</tt>";
-	canvasElement.hidden = true;
-	successElement.hidden = false;
-	continueAnimation = false;
-	outputContainer.hidden = true;
-    } else {
-	console.log("verification failed");
-    }
+    console.log("DATA==" + data + "==");
+    fetch('/api/check', {
+	method: 'POST',
+	headers: {
+            'Content-Type': 'text/plain'
+	},
+	body: data
+    })
+	.then(response => response.text())
+	.then(text => {
+	    if (text != "error") {
+		const result = JSON.parse(text);
+		successContentElement.innerHTML = "Machine ID: <b>" + result.machine_id + "</b><br>" + "Timestamp: <b>" + result.timestamp + "</b><br>Election ID: <tt>" + result.election_id + "</tt>";
+		canvasElement.hidden = true;
+		successElement.hidden = false;
+		continueAnimation = false;
+		outputContainer.hidden = true;
+	    } else {
+		console.log("verification failed");
+	    }
+	})
 }
 
 var continueAnimation = true;
@@ -142,8 +53,9 @@ function tick() {
 	    inversionAttempts: "dontInvert",
 	});
 	
-	if (code) {
+	if (code && code.data && code.data.startsWith("1//lc")) {
 	    processCodeData(code.data);
+	    continueAnimation = false;
 	}
     }
     if (continueAnimation) {
@@ -160,4 +72,3 @@ document.getElementById('startvideo').onclick = () => {
     });
 }
 
-*/

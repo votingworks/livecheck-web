@@ -1,10 +1,6 @@
 
-#from OpenSSL import crypto
-#from cryptography.hazmat.primitives import hashes
 from subprocess import call, run
 import tempfile
-
-code_data = """1//lc//CISA-ADMIN-1/2023-07-07T13:47:20.533Z/a49e587827;MEQCIFAWayV7R3vQ6lNo6efXKpSBFsUv62gGMxu7nqunLI/pAiBpMyCt1JysPMM3UC6Yjjw/QN9QQhV9K97mbHhbcxBRPg==; MIIB5DCCAYugAwIBAgIUAQwZDsjWSJ7Rv9s19OfeF50UACgwCgYIKoZIzj0EAwIw MDELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3Jr czAgFw0yMzA3MDcxMzM4MDhaGA8yMTIzMDYxMzEzMzgwOFowXjELMAkGA1UEBhMC VVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3JrczEUMBIGCSsGAQQB g9MpAQwFYWRtaW4xFjAUBgkrBgEEAYPTKQIMB25oLmNpc2EwWTATBgcqhkjOPQIB BggqhkjOPQMBBwNCAASdg8Kf+Sc9NR/1IZ+DLjyDj84u1EZB5rKcs3xHdFkkJ2zt ieee3iXfjz8QKsmS1ZUNMtz6Yvvr5HGZu86GJROPo1MwUTAdBgNVHQ4EFgQUmV8g Vy7GblNUL+LZlt3yEXA/g+4wHwYDVR0jBBgwFoAUE/Pfii66vo4nq896gViue7H9 0BkwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNHADBEAiA7JQfJVltN/CZ8 iLWTKJqF4jBmRz+YgAx1rjUrUuv32AIgZTQ+8ieZ1MsJXCJcu4cyXtK12OXtAqQO 6C+beBq7fYg="""
 
 root_cert_text = """
 -----BEGIN CERTIFICATE-----
@@ -45,7 +41,8 @@ def processCodeData(data):
 
     machine_id, timestamp, election_id = fields.split("/")
     
-    certificate = "-----BEGIN CERTIFICATE-----\n" + certificate_without_envelope + "\n-----END CERTIFICATE-----"
+    certificate = "-----BEGIN CERTIFICATE-----\n" + certificate_without_envelope.strip() + "\n-----END CERTIFICATE-----"
+    print(certificate)
 
     # verify certificate
     root_cert_file = makeTempFile(root_cert_text)
@@ -55,6 +52,8 @@ def processCodeData(data):
     if cert_verification_result != 0:
         return None
 
+    print("got cert verification result")
+    
     # extract public key from certificate
     public_key_text = run(['openssl', 'x509', '-noout', '-pubkey', '-in', cert_file], capture_output = True).stdout
     public_key_file = makeTempFile(public_key_text,"wb", None)
@@ -82,5 +81,3 @@ def processCodeData(data):
         return None
 
 
-
-print(processCodeData(code_data))
