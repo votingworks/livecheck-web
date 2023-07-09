@@ -3,7 +3,7 @@ from flask import Flask, send_from_directory, request
 
 from .livecheck import processCodeData
 
-STATIC_FOLDER="../dist"
+STATIC_FOLDER= os.path.join(os.path.dirname(os.path.abspath(__file__)), "../dist")
 
 app = Flask("livecheck", static_folder=None)
 
