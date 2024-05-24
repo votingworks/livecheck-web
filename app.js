@@ -26,7 +26,7 @@ function processCodeData(data) {
 	.then(text => {
 	    if (text != "error") {
 		const result = JSON.parse(text);
-		successContentElement.innerHTML = "Machine ID: <b>" + result.machine_id + "</b><br>" + "Timestamp: <b>" + result.timestamp + "</b><br>Election ID: <tt>" + result.election_id + "</tt>";
+		successContentElement.innerHTML = "Machine ID:<br> <b>" + result.machine_id + "</b><br><br>" + "Timestamp:<br> <b>" + result.timestamp + "</b><br><br>Election ID:<br> <b><tt>" + result.election_id + "</tt></b>";
 		canvasElement.hidden = true;
 		successElement.hidden = false;
 		continueAnimation = false;
