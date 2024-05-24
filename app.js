@@ -26,7 +26,8 @@ function processCodeData(data) {
 	.then(text => {
 	    if (text != "error") {
 		const result = JSON.parse(text);
-		successContentElement.innerHTML = "Machine ID:<br> <b>" + result.machine_id + "</b><br><br>" + "Timestamp:<br> <b>" + result.timestamp + "</b><br><br>Election ID:<br> <b><tt>" + result.election_id + "</tt></b>";
+		var timestamp = new Date(result.timestamp);
+		successContentElement.innerHTML = "Machine ID:<br> <b>" + result.machine_id + "</b><br><br>" + "Timestamp:<br> <b>" + timestamp.toLocaleDateString() + " " + timestamp.toLocaleTimeString() + "</b><br><br>Election ID:<br> <b><tt>" + result.election_id + "</tt></b>";
 		canvasElement.hidden = true;
 		successElement.hidden = false;
 		continueAnimation = false;
