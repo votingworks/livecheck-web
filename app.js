@@ -27,7 +27,24 @@ function processCodeData(data) {
 	    if (text != "error") {
 		const result = JSON.parse(text);
 		var timestamp = new Date(result.timestamp);
-		successContentElement.innerHTML = "Machine ID:<br> <b>" + result.machine_id + "</b><br><br>" + "Timestamp:<br> <b>" + timestamp.toLocaleDateString() + " " + timestamp.toLocaleTimeString() + "</b><br><br>Election ID:<br> <b><tt>" + result.election_id + "</tt></b>";
+
+		const metadata = [];
+		if (result.system_hash && result.software_version) {
+			metadata.push(
+				["System hash", "<tt>" + result.system_hash + "</tt>"],
+				["Version", result.software_version]
+			)
+		}
+		metadata.push(
+			["Machine ID", result.machine_id],
+			["Election ID", "<tt>" + (result.election_id || "None") + "</tt>"],
+			["Timestamp", timestamp.toLocaleDateString() + " " + timestamp.toLocaleTimeString()],
+		);
+		const innerHtml = metadata
+			.map((label, value) => label + ":<br><b>" + value + "</b>")
+			.join("<br><br>");
+
+		successContentElement.innerHTML = innerHtml;
 		canvasElement.hidden = true;
 		successElement.hidden = false;
 		continueAnimation = false;

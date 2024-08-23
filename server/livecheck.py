@@ -34,12 +34,22 @@ def processCodeData(data):
     if len(message_parts) != 3:
         return None
 
-    version, header, fields = message_parts
+    version, header, fields_str = message_parts
 
-    if version != "1" or header != "lc":
+    if version != "1":
         return None
 
-    machine_id, timestamp, election_id = fields.split("/")
+    vxsuite_version = None
+    fields = fields_str.split("/")
+
+    # Live Check (legacy feature name)
+    if header == "lc" and len(fields) == 3:
+        vxsuite_version = "v3"
+    # Signed hash validation, version 1
+    elif header == "shv1" and len(fields) == 5:
+        vxsuite_version = "v4"
+    else
+        return None
     
     certificate = "-----BEGIN CERTIFICATE-----\n" + certificate_without_envelope.strip() + "\n-----END CERTIFICATE-----"
     print(certificate)
@@ -71,13 +81,23 @@ def processCodeData(data):
         call(['rm', f])
 
     if verify_result.returncode == 0 and verify_result.stdout == b"Verified OK\n":
+        if vxsuite_version == "v3":
+            machine_id, timestamp, election_id = fields
+            return {
+                "machine_id": machine_id,
+                "election_id": election_id,
+                "timestamp": timestamp
+            }
+
+        assert vxsuite_version == "v4":
+        system_hash, software_version, machine_id, election_id, timestamp = fields
         return {
+            "system_hash": system_hash,
+            "software_version": software_version,
             "machine_id": machine_id,
-            "timestamp": timestamp,
-            "election_id": election_id
+            "election_id": election_id,
+            "timestamp": timestamp
         }
     else:
         print(verify_result)
         return None
-
-
