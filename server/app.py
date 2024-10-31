@@ -9,6 +9,7 @@ app = Flask("livecheck", static_folder=None)
 
 @app.route("/api/check", methods=["POST"])
 def check():
+    print("checking...")
     livecheck_data = request.get_data().decode('utf-8')
     result = processCodeData(livecheck_data)
     if result:

@@ -40,19 +40,22 @@ def processCodeData(data):
         return None
 
     vxsuite_version = None
-    fields = fields_str.split("/")
 
     # Live Check (legacy feature name)
-    if header == "lc" and len(fields) == 3:
-        vxsuite_version = "v3"
+    if header == "lc":
+        fields = fields_str.split("/")
+        if len(fields) == 3:
+            vxsuite_version = "v3"
     # Signed hash validation, version 1
-    elif header == "shv1" and len(fields) == 5:
-        vxsuite_version = "v4"
-    else
+    elif header =="shv1":
+        fields = fields_str.split("#")
+        if len(fields) == 5:
+            vxsuite_version = "v4"
+
+    if not vxsuite_version:
         return None
     
     certificate = "-----BEGIN CERTIFICATE-----\n" + certificate_without_envelope.strip() + "\n-----END CERTIFICATE-----"
-    print(certificate)
 
     # verify certificate
     root_cert_file = makeTempFile(root_cert_text)
@@ -62,8 +65,6 @@ def processCodeData(data):
     if cert_verification_result != 0:
         return None
 
-    print("got cert verification result")
-    
     # extract public key from certificate
     public_key_text = run(['openssl', 'x509', '-noout', '-pubkey', '-in', cert_file], capture_output = True).stdout
     public_key_file = makeTempFile(public_key_text,"wb", None)
@@ -89,7 +90,7 @@ def processCodeData(data):
                 "timestamp": timestamp
             }
 
-        assert vxsuite_version == "v4":
+        assert vxsuite_version == "v4"
         system_hash, software_version, machine_id, election_id, timestamp = fields
         return {
             "system_hash": system_hash,

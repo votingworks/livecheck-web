@@ -41,7 +41,7 @@ function processCodeData(data) {
 			["Timestamp", timestamp.toLocaleDateString() + " " + timestamp.toLocaleTimeString()],
 		);
 		const innerHtml = metadata
-			.map((label, value) => label + ":<br><b>" + value + "</b>")
+			.map((item) => item[0] + ":<br><b>" + item[1] + "</b>")
 			.join("<br><br>");
 
 		successContentElement.innerHTML = innerHtml;
