@@ -70,8 +70,16 @@ function tick() {
 	var code = jsQR(imageData.data, imageData.width, imageData.height, {
 	    inversionAttempts: "dontInvert",
 	});
+
+	if (code && code.data) {
+	    console.log("got QR code -- " + code.data);
+	}
 	
-	if (code && code.data && code.data.startsWith("1//lc")) {
+	if (code && code.data &&
+	    (code.data.startsWith("1//lc") ||
+	     code.data.startsWith("1//shv1")
+	    )
+	   ) {
 	    processCodeData(code.data);
 	    continueAnimation = false;
 	}
