@@ -30,10 +30,11 @@ function processCodeData(data) {
 
 		const metadata = [];
 		if (result.system_hash && result.software_version) {
-			metadata.push(
-				["System hash", "<tt>" + result.system_hash + "</tt>"],
-				["Version", result.software_version]
-			)
+		    const system_hash_pretty = result.system_hash.substring(0, result.system_hash.length / 2) + "<br>" + result.system_hash.substring(result.system_hash.length / 2);
+		    metadata.push(
+			["System hash", "<tt>" + system_hash_pretty + "</tt>"],
+			["Version", result.software_version]
+		    )
 		}
 		metadata.push(
 			["Machine ID", result.machine_id],
@@ -97,4 +98,3 @@ document.getElementById('startvideo').onclick = () => {
 	requestAnimationFrame(tick);
     });
 }
-
