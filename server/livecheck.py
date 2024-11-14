@@ -17,10 +17,31 @@ UNH5nCCoUC/6/nM=
 -----END CERTIFICATE-----
 """
 
+VX_IANA_ENTERPRISE_OID = '1.3.6.1.4.1.59817'
+
+VX_CUSTOM_CERT_FIELD = {
+    "MACHINE_ID": f"{VX_IANA_ENTERPRISE_OID}.6",
+}
+
 def makeTempFile(content, mode="w", encoding="utf-8"):
     tf = tempfile.NamedTemporaryFile(mode=mode, encoding=encoding, delete=False)
     tf.write(content)
     return tf.name
+
+def parseCertDetails(public_key_text):
+    public_key_string = public_key_text.strip()
+    if not public_key_string.startswith("subject="):
+        return {}
+
+    cert_subject = public_key_string.replace("subject=", "").strip()
+    cert_fields_list = [field.strip() for field in cert_subject.split(",")]
+    cert_fields = {}
+    for cert_field in cert_fields_list:
+        if "=" in cert_field:
+            field_name, field_value = cert_field.split("=", 1)
+            cert_fields[field_name.strip()] = field_value.strip()
+            
+    return cert_fields
 
 def processCodeData(data):
     components = data.split(";")
@@ -91,7 +112,9 @@ def processCodeData(data):
             }
 
         assert vxsuite_version == "v4"
-        system_hash, software_version, machine_id, election_id, timestamp = fields
+        cert_details = parseCertDetails(certificate_without_envelope)
+        machine_id = cert_details[VX_CUSTOM_CERT_FIELD["MACHINE_ID"]]
+        system_hash, software_version, election_id, timestamp = fields
         return {
             "system_hash": system_hash,
             "software_version": software_version,
