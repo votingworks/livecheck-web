@@ -17,6 +17,21 @@ UNH5nCCoUC/6/nM=
 -----END CERTIFICATE-----
 """
 
+root_cert_text_dev = """
+-----BEGIN CERTIFICATE-----
+MIIBtjCCAV2gAwIBAgIUD5z+lzBU64i8+7ZarbmofAk9yjAwCgYIKoZIzj0EAwIw
+MDELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3Jr
+czAgFw0yNDEwMjgwNDExMzVaGA8yMTI0MTAwNDA0MTEzNVowMDELMAkGA1UEBhMC
+VVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3JrczBZMBMGByqGSM49
+AgEGCCqGSM49AwEHA0IABJDLSJQlKgCPZSgP+ZVpgareR1KWWRd4FjR94JymY21Q
+AcxLmgCD9jWnq+lp6SVy1Dz/NJ6Au23oRNgvWqGi8emjUzBRMB0GA1UdDgQWBBRM
+c0o7/6216xmY8apne2R8nQnmrTAfBgNVHSMEGDAWgBRMc0o7/6216xmY8apne2R8
+nQnmrTAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0cAMEQCIG1WBl7HOeDB
+ftdu7Xmh0G4kzGktQ5hkJeOzRXNn346bAiB6QIjc1c61pM+E/MME4TXdOgmaS1gt
+QgBhqrQsjg5eTQ==
+-----END CERTIFICATE-----
+"""
+
 VX_IANA_ENTERPRISE_OID = '1.3.6.1.4.1.59817'
 
 VX_CUSTOM_CERT_FIELD = {
@@ -28,19 +43,19 @@ def makeTempFile(content, mode="w", encoding="utf-8"):
     tf.write(content)
     return tf.name
 
-def parseCertDetails(public_key_text):
-    public_key_string = public_key_text.strip()
-    if not public_key_string.startswith("subject="):
+def parseCertDetails(cert):
+    response = run(['openssl', 'x509', '-noout', '-subject', '-in', cert], capture_output = True).stdout
+    resp_string = response.decode('utf-8').strip()
+    if not resp_string.startswith("subject="):
         return {}
 
-    cert_subject = public_key_string.replace("subject=", "").strip()
+    cert_subject = resp_string.replace("subject=", "").strip()
     cert_fields_list = [field.strip() for field in cert_subject.split(",")]
     cert_fields = {}
     for cert_field in cert_fields_list:
         if "=" in cert_field:
             field_name, field_value = cert_field.split("=", 1)
             cert_fields[field_name.strip()] = field_value.strip()
-            
     return cert_fields
 
 def processCodeData(data):
@@ -70,9 +85,8 @@ def processCodeData(data):
     # Signed hash validation, version 1
     elif header =="shv1":
         fields = fields_str.split("#")
-        if len(fields) == 5:
+        if len(fields) == 4:
             vxsuite_version = "v4"
-
     if not vxsuite_version:
         return None
     
@@ -81,10 +95,16 @@ def processCodeData(data):
     # verify certificate
     root_cert_file = makeTempFile(root_cert_text)
     cert_file = makeTempFile(certificate)
+    cert_details = parseCertDetails(cert_file)
 
     cert_verification_result = call(['openssl', 'verify', '-CAfile', root_cert_file, cert_file])
+    is_dev = False
     if cert_verification_result != 0:
-        return None
+        root_cert_file = makeTempFile(root_cert_text_dev)
+        cert_verification_result_dev = call(['openssl', 'verify', '-CAfile', root_cert_file, cert_file])
+        if cert_verification_result_dev != 0:
+            return None
+        is_dev = True
 
     # extract public key from certificate
     public_key_text = run(['openssl', 'x509', '-noout', '-pubkey', '-in', cert_file], capture_output = True).stdout
@@ -97,7 +117,6 @@ def processCodeData(data):
     signature_raw_file = makeTempFile(signature_raw, "wb", None)
 
     verify_result = run(['openssl', 'dgst', '-sha256', '-verify', public_key_file, '-signature', signature_raw_file, message_file], capture_output=True)
-
     # delete tmp files
     for f in [root_cert_file, cert_file, public_key_file, message_file, signature_file, signature_raw_file]:
         call(['rm', f])
@@ -108,11 +127,10 @@ def processCodeData(data):
             return {
                 "machine_id": machine_id,
                 "election_id": election_id,
-                "timestamp": timestamp
+                "timestamp": timestamp,
             }
 
         assert vxsuite_version == "v4"
-        cert_details = parseCertDetails(certificate_without_envelope)
         machine_id = cert_details[VX_CUSTOM_CERT_FIELD["MACHINE_ID"]]
         system_hash, software_version, election_id, timestamp = fields
         return {
@@ -120,8 +138,10 @@ def processCodeData(data):
             "software_version": software_version,
             "machine_id": machine_id,
             "election_id": election_id,
-            "timestamp": timestamp
+            "timestamp": timestamp,
+            "is_dev": is_dev
         }
     else:
         print(verify_result)
         return None
+
