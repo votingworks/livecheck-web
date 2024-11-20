@@ -2,18 +2,32 @@
 from subprocess import call, run
 import tempfile
 
-root_cert_text = """
------BEGIN CERTIFICATE-----
-MIIBtzCCAV2gAwIBAgIUJXljpuonoCbjPFgRgYS42EUlRnAwCgYIKoZIzj0EAwIw
+# root_cert_text = """
+# -----BEGIN CERTIFICATE-----
+# MIIBtzCCAV2gAwIBAgIUJXljpuonoCbjPFgRgYS42EUlRnAwCgYIKoZIzj0EAwIw
+# MDELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3Jr
+# czAgFw0yMzA3MDUyMDUxMDdaGA8yMTIzMDYxMTIwNTEwN1owMDELMAkGA1UEBhMC
+# VVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3JrczBZMBMGByqGSM49
+# AgEGCCqGSM49AwEHA0IABDpuTIaivOkpG7zscOpujtz2LLYewTAInfLW1nOAEXh7
+# PVP43j0YNq25ZUyb2lTm57w84R584M9QxW27cIHbDbmjUzBRMB0GA1UdDgQWBBQT
+# 89+KLrq+jierz3qBWK57sf3QGTAfBgNVHSMEGDAWgBQT89+KLrq+jierz3qBWK57
+# sf3QGTAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gAMEUCIF07Es6YehPa
+# qF9kKw+eTlNvt/9I+Zbqut4XBWD4q7NTAiEA/XhKGlC1zu6UK9oYqbw77RXMqQtf
+# UNH5nCCoUC/6/nM=
+# -----END CERTIFICATE-----
+# """
+
+root_cert_text = """-----BEGIN CERTIFICATE-----
+MIIBtjCCAV2gAwIBAgIUD5z+lzBU64i8+7ZarbmofAk9yjAwCgYIKoZIzj0EAwIw
 MDELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3Jr
-czAgFw0yMzA3MDUyMDUxMDdaGA8yMTIzMDYxMTIwNTEwN1owMDELMAkGA1UEBhMC
+czAgFw0yNDEwMjgwNDExMzVaGA8yMTI0MTAwNDA0MTEzNVowMDELMAkGA1UEBhMC
 VVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3JrczBZMBMGByqGSM49
-AgEGCCqGSM49AwEHA0IABDpuTIaivOkpG7zscOpujtz2LLYewTAInfLW1nOAEXh7
-PVP43j0YNq25ZUyb2lTm57w84R584M9QxW27cIHbDbmjUzBRMB0GA1UdDgQWBBQT
-89+KLrq+jierz3qBWK57sf3QGTAfBgNVHSMEGDAWgBQT89+KLrq+jierz3qBWK57
-sf3QGTAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gAMEUCIF07Es6YehPa
-qF9kKw+eTlNvt/9I+Zbqut4XBWD4q7NTAiEA/XhKGlC1zu6UK9oYqbw77RXMqQtf
-UNH5nCCoUC/6/nM=
+AgEGCCqGSM49AwEHA0IABJDLSJQlKgCPZSgP+ZVpgareR1KWWRd4FjR94JymY21Q
+AcxLmgCD9jWnq+lp6SVy1Dz/NJ6Au23oRNgvWqGi8emjUzBRMB0GA1UdDgQWBBRM
+c0o7/6216xmY8apne2R8nQnmrTAfBgNVHSMEGDAWgBRMc0o7/6216xmY8apne2R8
+nQnmrTAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0cAMEQCIG1WBl7HOeDB
+ftdu7Xmh0G4kzGktQ5hkJeOzRXNn346bAiB6QIjc1c61pM+E/MME4TXdOgmaS1gt
+QgBhqrQsjg5eTQ==
 -----END CERTIFICATE-----
 """
 
@@ -49,7 +63,7 @@ def processCodeData(data):
     # Signed hash validation, version 1
     elif header =="shv1":
         fields = fields_str.split("#")
-        if len(fields) == 5:
+        if len(fields) == 4:
             vxsuite_version = "v4"
 
     if not vxsuite_version:
@@ -91,14 +105,30 @@ def processCodeData(data):
             }
 
         assert vxsuite_version == "v4"
-        system_hash, software_version, machine_id, election_id, timestamp = fields
+        system_hash, software_version, election_id, timestamp = fields
         return {
             "system_hash": system_hash,
             "software_version": software_version,
-            "machine_id": machine_id,
+            # "machine_id": machine_id,
             "election_id": election_id,
             "timestamp": timestamp
         }
     else:
         print(verify_result)
         return None
+
+if __name__ == "__main__":
+    data = """1//shv1//UNVERIFIED==================================#dev#292e786-7bdeb2d#2024-11-20T21:32:53.306Z;MEQCIBSB+qEfA4Cb4QuA9y5y8t4Tyb3/+GsdaUDVU0lvwTKEAiB3E7RRjkvgLEpFywFmRdJ/beiNpYDPmPrpeZ13og/9Cg==;
+MIIB+jCCAaCgAwIBAgIUQb1QWvhK6xmC7VeRR7ZDSDYOhdswCgYIKoZIzj0EAwIw
+MDELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3Jr
+czAgFw0yNDEwMjgwNDExMzVaGA8yMTI0MTAwNDA0MTEzNVowczELMAkGA1UEBhMC
+VVMxCzAJBgNVBAgMAkNBMRQwEgYDVQQKDAtWb3RpbmdXb3JrczEUMBIGCSsGAQQB
+g9MpAQwFYWRtaW4xEzARBgkrBgEEAYPTKQYMBDAwMDAxFjAUBgkrBgEEAYPTKQIM
+B3Z4LnRlc3QwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASK1P8exeoK38cPkPX9
+9p5SC/Kc+n5Pb+O6dYcGynn9M6aNMVd7+3af3FhkTHylkYNTgvrXzVPlf2h1uHBD
+m1nio1MwUTAdBgNVHQ4EFgQUorK8KERcQS4HAEC04vzPakZ3SCUwHwYDVR0jBBgw
+FoAUTHNKO/+ttesZmPGqZ3tkfJ0J5q0wDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjO
+PQQDAgNIADBFAiAN1t3y3g58ikteaFHuphjLpwzB3WNdWvT7k/xftlzbSgIhAL3n
+eBs4/XVP5afRUZWzJAP836mpqCeAEBXKv/0IVagd
+"""
+    print(processCodeData(data))
