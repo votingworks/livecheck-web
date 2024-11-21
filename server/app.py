@@ -17,7 +17,6 @@ def check():
     else:
         return "error", 401
 
-
 # Serve the static HTML at remaining URLs that aren't static files
 @app.route("/")
 @app.route("/<path:path>")
@@ -26,4 +25,3 @@ def serve(path="index.html"):
         return send_from_directory(STATIC_FOLDER, path)
     else:
         return "not found", 404
-
