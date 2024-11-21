@@ -14,4 +14,4 @@ signature against known machine public keys.
   - Run the client with `npm run dev` and the server with `python3 -m server.app`
   - In a separate terminal, expose the client to the internet with `ngrok http 3000`
   - On your phone, access the client using the url provided by ngrok
-- Recommended to develop on Ubuntu, as signature validation has different behavior on MacOS
+- Developing on Linux is recommended to match production

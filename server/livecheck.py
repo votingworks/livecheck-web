@@ -45,11 +45,11 @@ def makeTempFile(content, mode="w", encoding="utf-8"):
 
 def parseCertDetails(cert):
     response = run(['openssl', 'x509', '-noout', '-subject', '-in', cert], capture_output = True).stdout
-    resp_string = response.decode('utf-8').strip()
-    if not resp_string.startswith("subject="):
+    response_string = response.decode('utf-8').strip()
+    if not response_string.startswith("subject="):
         return {}
 
-    cert_subject = resp_string.replace("subject=", "").strip()
+    cert_subject = response_string.replace("subject=", "").strip()
     cert_fields_list = [field.strip() for field in cert_subject.split(",")]
     cert_fields = {}
     for cert_field in cert_fields_list:
@@ -120,6 +120,7 @@ def processCodeData(data):
     signature_raw_file = makeTempFile(signature_raw, "wb", None)
 
     verify_result = run(['openssl', 'dgst', '-sha256', '-verify', public_key_file, '-signature', signature_raw_file, message_file], capture_output=True)
+
     # delete tmp files
     for f in [root_cert_file, cert_file, public_key_file, message_file, signature_file, signature_raw_file]:
         call(['rm', f])
@@ -130,10 +131,12 @@ def processCodeData(data):
             return {
                 "machine_id": machine_id,
                 "election_id": election_id,
-                "timestamp": timestamp,
+                "timestamp": timestamp
             }
 
         assert vxsuite_version == "v4"
+        if VX_CUSTOM_CERT_FIELD["MACHINE_ID"] not in cert_details:
+            return None
         machine_id = cert_details[VX_CUSTOM_CERT_FIELD["MACHINE_ID"]]
         system_hash, software_version, election_id, timestamp = fields
         if is_dev:
@@ -143,9 +146,8 @@ def processCodeData(data):
             "software_version": software_version,
             "machine_id": machine_id,
             "election_id": election_id,
-            "timestamp": timestamp,
+            "timestamp": timestamp
         }
     else:
         print(verify_result)
         return None
-
