@@ -100,9 +100,12 @@ def processCodeData(data):
     cert_verification_result = call(['openssl', 'verify', '-CAfile', root_cert_file, cert_file])
     is_dev = False
     if cert_verification_result != 0:
+        # attempt to verify with dev certificate as a fallback
+        call(['rm', root_cert_file])
         root_cert_file = makeTempFile(root_cert_text_dev)
         cert_verification_result_dev = call(['openssl', 'verify', '-CAfile', root_cert_file, cert_file])
         if cert_verification_result_dev != 0:
+            call(['rm', f"{root_cert_file} {cert_file}"])
             return None
         is_dev = True
 
@@ -133,13 +136,14 @@ def processCodeData(data):
         assert vxsuite_version == "v4"
         machine_id = cert_details[VX_CUSTOM_CERT_FIELD["MACHINE_ID"]]
         system_hash, software_version, election_id, timestamp = fields
+        if is_dev:
+            software_version = "For internal testing only – " + software_version
         return {
             "system_hash": system_hash,
             "software_version": software_version,
             "machine_id": machine_id,
             "election_id": election_id,
             "timestamp": timestamp,
-            "is_dev": is_dev
         }
     else:
         print(verify_result)
