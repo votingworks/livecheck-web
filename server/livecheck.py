@@ -45,11 +45,13 @@ def makeTempFile(content, mode="w", encoding="utf-8"):
 
 def parseCertDetails(cert):
     response = run(['openssl', 'x509', '-noout', '-subject', '-in', cert], capture_output = True).stdout
-    response_string = response.decode('utf-8').strip()
-    if not response_string.startswith("subject="):
-        return {}
+    cert_subject_string = response.decode('utf-8').strip()
+    return parseCertSubject(cert_subject_string)
 
-    cert_subject = response_string.replace("subject=", "").strip()
+def parseCertSubject(cert_subject_string):
+    if not cert_subject_string.startswith("subject="):
+        return {}
+    cert_subject = cert_subject_string.replace("subject=", "").strip()
     cert_fields_list = [field.strip() for field in cert_subject.split(",")]
     cert_fields = {}
     for cert_field in cert_fields_list:
@@ -95,8 +97,6 @@ def processCodeData(data):
     # verify certificate
     root_cert_file = makeTempFile(root_cert_text)
     cert_file = makeTempFile(certificate)
-    cert_details = parseCertDetails(cert_file)
-
     cert_verification_result = call(['openssl', 'verify', '-CAfile', root_cert_file, cert_file])
     is_dev = False
     if cert_verification_result != 0:
@@ -118,8 +118,8 @@ def processCodeData(data):
     signature_file = makeTempFile(signature)
     signature_raw = run(['base64', '-d', signature_file], capture_output = True).stdout
     signature_raw_file = makeTempFile(signature_raw, "wb", None)
-
     verify_result = run(['openssl', 'dgst', '-sha256', '-verify', public_key_file, '-signature', signature_raw_file, message_file], capture_output=True)
+    cert_details = parseCertDetails(cert_file)
 
     # delete tmp files
     for f in [root_cert_file, cert_file, public_key_file, message_file, signature_file, signature_raw_file]:

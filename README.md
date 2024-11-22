@@ -15,3 +15,7 @@ signature against known machine public keys.
   - In a separate terminal, expose the client to the internet with `ngrok http 3000`
   - On your phone, access the client using the url provided by ngrok
 - Developing on Linux is recommended to match production
+
+## Testing
+
+- To test the server, run `pytest` from the root directory or `server/`
