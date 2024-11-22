@@ -119,35 +119,38 @@ def processCodeData(data):
     signature_raw = run(['base64', '-d', signature_file], capture_output = True).stdout
     signature_raw_file = makeTempFile(signature_raw, "wb", None)
     verify_result = run(['openssl', 'dgst', '-sha256', '-verify', public_key_file, '-signature', signature_raw_file, message_file], capture_output=True)
-    cert_details = parseCertDetails(cert_file)
-
-    # delete tmp files
-    for f in [root_cert_file, cert_file, public_key_file, message_file, signature_file, signature_raw_file]:
-        call(['rm', f])
 
     if verify_result.returncode == 0 and verify_result.stdout == b"Verified OK\n":
         if vxsuite_version == "v3":
             machine_id, timestamp, election_id = fields
-            return {
+            return_val = {
                 "machine_id": machine_id,
                 "election_id": election_id,
                 "timestamp": timestamp
             }
-
-        assert vxsuite_version == "v4"
-        if VX_CUSTOM_CERT_FIELD["MACHINE_ID"] not in cert_details:
-            return None
-        machine_id = cert_details[VX_CUSTOM_CERT_FIELD["MACHINE_ID"]]
-        system_hash, software_version, election_id, timestamp = fields
-        if is_dev:
-            software_version = "For internal testing only – " + software_version
-        return {
-            "system_hash": system_hash,
-            "software_version": software_version,
-            "machine_id": machine_id,
-            "election_id": election_id,
-            "timestamp": timestamp
-        }
+        else:
+            assert vxsuite_version == "v4"
+            cert_details = parseCertDetails(cert_file)
+            if VX_CUSTOM_CERT_FIELD["MACHINE_ID"] in cert_details:
+                machine_id = cert_details[VX_CUSTOM_CERT_FIELD["MACHINE_ID"]]
+                system_hash, software_version, election_id, timestamp = fields
+                if is_dev:
+                    software_version = "For internal testing only – " + software_version
+                return_val = {
+                    "system_hash": system_hash,
+                    "software_version": software_version,
+                    "machine_id": machine_id,
+                    "election_id": election_id,
+                    "timestamp": timestamp
+                }
+            else:
+                return_val = None
     else:
         print(verify_result)
-        return None
+        return_val = None
+    
+    # delete tmp files
+    for f in [root_cert_file, cert_file, public_key_file, message_file, signature_file, signature_raw_file]:
+        call(['rm', f])
+        
+    return return_val
