@@ -69,25 +69,16 @@ def processCodeData(data):
 
     message, signature, certificate_without_envelope = components
 
-    message_parts = message.split("//")
-    if len(message_parts) != 3:
-        return None
-
-    version, header, fields_str = message_parts
-
-    if version != "1":
-        return None
+    v3_prefix = "1//lc//" # Live Check (legacy feature name)
+    v4_prefix = "1//shv1//" # Signed Hash Validation, version 1
 
     vxsuite_version = None
-
-    # Live Check (legacy feature name)
-    if header == "lc":
-        fields = fields_str.split("/")
+    if message.startswith(v3_prefix):
+        fields = message[len(v3_prefix):].split("/")
         if len(fields) == 3:
             vxsuite_version = "v3"
-    # Signed hash validation, version 1
-    elif header =="shv1":
-        fields = fields_str.split("#")
+    elif message.startswith(v4_prefix):
+        fields = message[len(v4_prefix):].split("#")
         if len(fields) == 4:
             vxsuite_version = "v4"
     if not vxsuite_version:
