@@ -7,6 +7,7 @@ name = "pypi"
 pyopenssl = "*"
 flask = "*"
 gunicorn = "*"
+requests = "*"
 
 [dev-packages]
 
