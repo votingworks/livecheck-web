@@ -4,7 +4,7 @@ AIRTABLE_API_BASE = "https://api.airtable.com/v0"
 SHV_EVENTS_TABLE = "SHV Events"
 
 
-def log_to_airtable(api_key, base_id, success_result):
+def log_success_to_airtable(api_key, base_id, success_result):
     """
     Creates a record in the SHV Events table.
     Returns {"success": True} or {"success": False, "error": "..."}
