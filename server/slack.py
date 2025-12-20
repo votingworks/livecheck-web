@@ -6,16 +6,22 @@ def markdown(text):
 def log_success_to_slack(
     slack_webhook_url,
     success_result,
+    airtable_result=None,
 ):
+    if airtable_result and not airtable_result["success"]:
+        header_text = ":warning: Scan succeeded, but Airtable integration failed :warning:"
+    else:
+        header_text = ":white_check_mark: Scan succeeded"
+
     response = requests.post(
         slack_webhook_url,
         headers={"Content-Type": "application/json"},
         json={
-            "text": "Scan succeeded",
+            "text": header_text,
             "blocks": [
                 {
                     "type": "section",
-                    "text": markdown("*Scan succeeded*"),
+                    "text": markdown(f"*{header_text}*"),
                 },
                 {
                     "type": "context",
